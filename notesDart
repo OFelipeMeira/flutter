@@ -1,0 +1,127 @@
+/*  NOTES:
+  var -- possivel usar var para não declarar tipo;
+  final -- não é possivel alterar valor da variavel
+
+  para indicar retorno de funções é necessario declarar antes do nome (JAVA)
+  tipagem de variavel igual java
+  se não tipar, a ide vai tentar adivinhar - pode funcionar, mas é mais facil de errar
+
+  Tudo herda de Object - Valor padrão é NULO
+
+  Estrutura de funções:
+  {tipo_do_retorno} {nome}( {variavel1}, [ {variavel_opcional} ]) {
+    {corpo_da_função}
+  }
+
+
+  Não existe public, private, protected - tudo é publico ou privado
+    default: tudo é publico
+    para privar variaveis coloca o _ antes no nome. Ex.:
+      final String _fullName;
+
+
+*/
+
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
+
+// dessa forma, n2 é opcional - se não tiver valor, vale 5
+double sum(double n1, [double n2 = 5]) => n1 + n2;
+
+// permite que os parametros sejam nomeados na hora de chamar a função - necessario atribuir valor inicial para todos os argumentos
+// parametro obrigatorio se tiver o required
+double sub({required double n1 , double n2 = 0}){
+  return n1-n2;
+}
+
+// 'decorator' sealded impede que outras classes herdem de UserModel
+//  immutable impede que um objeto tenha algum valor alterado apos ser instanciado
+//    quando usamos immutable, todas as variaveis tem que ser final
+@immutable @sealed
+class UserModel{
+  final String firstName;
+  final String lastName;
+  final String fullName;
+
+  // construtor
+  UserModel(this.firstName, this.lastName)
+    : fullName = '$firstName $lastName';    // fullname é um parametro não é passado como parametro
+
+  UserModel.fromJson(Map json)
+      : firstName = json['firstName'],
+        lastName =  json['lastName'],
+        fullName = ' ${json['firstName']} ${json['lastName']} ' ;
+
+  factory UserModel.fromJsonString(String json){
+    final map = jsonDecode(json);
+    return UserModel.fromJson(map);
+  }
+
+  //Funções assincronas:
+  Future<void> save() async{
+    await Future.delayed(Duration(seconds: 2)); // sleep 2 segundos :D
+  }
+
+}
+
+// enum são classes especificar que tem valores constantes
+enum ValidationError  {
+  requiredField,
+  invalidField
+}
+
+// Cria uma extensão para o enum - que retorna Strings com os erros
+extension ValidationErrorExtention on ValidationError{
+  String get description{
+    switch (this){
+      case ValidationError.requiredField: return 'Campo obrigatorio';
+      case ValidationError.invalidField: return 'Campo invalido';
+      default: return 'Erro generico';
+    }
+  }
+}
+
+// criando extensão para a classe int, possibilitando elevar numeros ao quadrado
+extension IntExtention on int{
+  int sqr() => this * this;
+}
+
+abstract class UserCase{
+  // quem extender de UserCase, ganha os methods
+  // quem implementar tem que reescrever
+  void method(){
+    //corpo do metodo
+  }
+}
+
+Future<void> main() async{
+  var n =sum(3);
+  var m = sub(n1: 10, n2:3);
+
+  print('the sum is: $n');
+  print('the subtraction is: $m');
+
+  var u1 = UserModel('Felipe', 'Meira');
+  var u2 = UserModel('Felipe', 'Meira');
+  print(identical(u1, u2));
+
+  //usando a extensão criada para ints
+  int c = 3;
+  print(c.sqr());
+
+  //para usar funções assincronas é necessario converter a main em Future e colocar async
+  await u1.save();
+  print(u1.fullName);
+
+  // criando uma lista de ints
+  List<int> list = [1,2,3,4];
+  var list2 = [1,2,3,4];
+
+  // igual lista só que sem valores duplicados
+  var set = {1,2,3,4};
+
+  //'json'
+  var map = {'n1': 1, 'n2':2};
+}
